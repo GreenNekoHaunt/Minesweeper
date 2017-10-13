@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Internet</title>
+</head>
+<body>
+<h1>Minesweeper</h1>
+<input id="start" disabled type="button" value="Playing..." onclick="start();"/>
+Level: <i id="level">1</i> Score: <i id="score">0</i>
+<hr/>
+<input id="field00" style="width:32px; height:32px" type="button" onclick="onClick(0, 0);"/>
+<input id="field01" style="width:32px; height:32px" type="button" onclick="onClick(0, 1);"/>
+<input id="field02" style="width:32px; height:32px" type="button" onclick="onClick(0, 2);"/>
+<input id="field03" style="width:32px; height:32px" type="button" onclick="onClick(0, 3);"/>
+<input id="field04" style="width:32px; height:32px" type="button" onclick="onClick(0, 4);"/>
+<br/>
+<input id="field10" style="width:32px; height:32px" type="button" onclick="onClick(1, 0);"/>
+<input id="field11" style="width:32px; height:32px" type="button" onclick="onClick(1, 1);"/>
+<input id="field12" style="width:32px; height:32px" type="button" onclick="onClick(1, 2);"/>
+<input id="field13" style="width:32px; height:32px" type="button" onclick="onClick(1, 3);"/>
+<input id="field14" style="width:32px; height:32px" type="button" onclick="onClick(1, 4);"/>
+<br/>
+<input id="field20" style="width:32px; height:32px" type="button" onclick="onClick(2, 0);"/>
+<input id="field21" style="width:32px; height:32px" type="button" onclick="onClick(2, 1);"/>
+<input id="field22" style="width:32px; height:32px" type="button" onclick="onClick(2, 2);"/>
+<input id="field23" style="width:32px; height:32px" type="button" onclick="onClick(2, 3);"/>
+<input id="field24" style="width:32px; height:32px" type="button" onclick="onClick(2, 4);"/>
+<br/>
+<input id="field30" style="width:32px; height:32px" type="button" onclick="onClick(3, 0);"/>
+<input id="field31" style="width:32px; height:32px" type="button" onclick="onClick(3, 1);"/>
+<input id="field32" style="width:32px; height:32px" type="button" onclick="onClick(3, 2);"/>
+<input id="field33" style="width:32px; height:32px" type="button" onclick="onClick(3, 3);"/>
+<input id="field34" style="width:32px; height:32px" type="button" onclick="onClick(3, 4);"/>
+<br/>
+<input id="field40" style="width:32px; height:32px" type="button" onclick="onClick(4, 0);"/>
+<input id="field41" style="width:32px; height:32px" type="button" onclick="onClick(4, 1);"/>
+<input id="field42" style="width:32px; height:32px" type="button" onclick="onClick(4, 2);"/>
+<input id="field43" style="width:32px; height:32px" type="button" onclick="onClick(4, 3);"/>
+<input id="field44" style="width:32px; height:32px" type="button" onclick="onClick(4, 4);"/>
+<br/>
+<input id="field50" style="width:32px; height:32px" type="button" onclick="onClick(5, 0);"/>
+<input id="field51" style="width:32px; height:32px" type="button" onclick="onClick(5, 1);"/>
+<input id="field52" style="width:32px; height:32px" type="button" onclick="onClick(5, 2);"/>
+<input id="field53" style="width:32px; height:32px" type="button" onclick="onClick(5, 3);"/>
+<input id="field54" style="width:32px; height:32px" type="button" onclick="onClick(5, 4);"/>
+<hr/>
+<h2>Highscore</h2>
+<p id="ranking">
+</p>
+<script>
+var bombs = [0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0];
+var clicked = [0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0]
+var rankingNames = [];
+var rankingScores = [];
+
+var score = 0;
+var hits = 0;
+var level = 1;
+var gameover = false;
+
+window.onload = function onLoad()
+{
+	start();
+}
+
+function start()
+{
+	var bombsCount = 0;
+	while(bombsCount < level)
+	{
+		for(var i = 0; i < 30 && bombsCount < level; i++)
+		{
+			if(Math.random() < level/30)
+			{
+				bombs[i] = 1;
+				bombsCount++;
+			}
+		} 
+	}
+}
+
+var resetFunc = function reset()
+{
+	score = 0;
+	hits = 0;
+	level = 1;
+	gameover = false;
+	for(var c = 0; c < 6; c++) 
+	{
+		for(var r = 0; r < 5; r++)
+		{
+			document.getElementById("field" + String(c) + String(r)).value = "";
+			bombs[r+c*5] = 0;
+			clicked[r+c*5] = 0;
+		}
+	}
+	document.getElementById("level").innerHTML = level;
+	document.getElementById("start").value = "Playing...";
+	document.getElementById("start").disabled = true;
+	start();
+}
+
+var nextLevelFunc = function nextLevel()
+{
+	level++;
+	hits = 0;
+	for(var c = 0; c < 6; c++) 
+	{
+		for(var r = 0; r < 5; r++)
+		{
+			document.getElementById("field" + String(c) + String(r)).value = "";
+			bombs[r+c*5] = 0;
+			clicked[r+c*5] = 0;
+		}
+	}
+	document.getElementById("start").value = "Playing...";
+	document.getElementById("start").disabled = true;
+	document.getElementById("level").innerHTML = level;
+	start();	
+}
+
+
+function onClick(column, row) {
+	if(!gameover)
+	{
+		if(bombs[row+column*5] === 1)
+		{
+			var name = prompt("Game Over! Your score: " + String(score), "AAAAAA");
+			rankingNames.push(name);
+			rankingScores.push(score);
+			updateRanking();
+			gameover = true;
+			document.getElementById("field" + String(column) + String(row)).value = "X";
+			document.getElementById("start").disabled = false;
+			document.getElementById("start").value = "Reset";
+			document.getElementById("start").onclick = resetFunc;
+		}
+		else
+		{
+			var adjacent = 0;
+			if(row > 0)
+			{
+				//left
+				if(bombs[row-1+column*5] === 1)
+				{
+					adjacent++;
+				}
+				//upper left
+				if(bombs[row-1+(column-1)*5] === 1)
+				{
+				adjacent++;
+				}
+				//lower left
+				if(bombs[row-1+(column+1)*5] === 1)
+				{
+					adjacent++;
+				}
+			}
+			if(row < 4)
+			{
+				//right
+				if(bombs[row+1+column*5] === 1)
+				{
+					adjacent++;
+				}
+				//upper right
+				if(bombs[row+1+(column-1)*5] === 1)
+				{
+					adjacent++;
+				}
+				//lower right
+				if(bombs[row+1+(column+1)*5] === 1)
+				{
+					adjacent++;
+				}
+			}
+			//above
+			if(bombs[row+(column-1)*5] === 1)
+			{
+				adjacent++;
+			}
+			//below
+			if(bombs[row+(column+1)*5] === 1)
+			{
+				adjacent++;
+			}
+			if(clicked[row+column*5] === 0)
+			{
+				clicked[row+column*5] = 1;
+				score += (5 + adjacent * 10) * level;
+				hits++;
+			}
+			document.getElementById("field" + String(column) + String(row)).value = String(adjacent);
+			document.getElementById("score").innerHTML = score;
+			if(hits >= 30 - level)
+			{
+				alert("You did it!");
+				document.getElementById("start").disabled = false;
+				document.getElementById("start").value = "Next Level";
+				document.getElementById("start").onclick = nextLevelFunc;
+			}
+		}
+	}
+}
+
+function swapRanks(a, b)
+{
+	var tempName = rankingNames[a];
+	var tempScore = rankingScores[a];
+	rankingNames[a] = rankingNames[b];
+	rankingScores[a] = rankingScores[b];
+	rankingNames[b] = tempName;
+	rankingScores[b] = tempScore;
+}
+
+function sortRanking()
+{
+	var pos = rankingScores.length - 1;
+	while(rankingScores[pos] > rankingScores[pos - 1])
+	{
+		swapRanks(pos, pos - 1);
+		pos--;
+	}
+}
+
+function updateRanking()
+{
+	sortRanking();
+	var rankingHTML = "<li>";
+	for(var i = 0; i < rankingNames.length; i++)
+	{
+		rankingHTML += "<ol>" + String(i+1) + ". " + rankingNames[i] + " - " + rankingScores[i] + "</ol>";
+	}
+	document.getElementById("ranking").innerHTML = rankingHTML + "</li>";
+}
+</script>
+</body>
+</html>
